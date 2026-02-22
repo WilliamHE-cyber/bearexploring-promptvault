@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bear Exploring AI - 200+ AI Mini-Apps</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1f2937">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Bear Exploring AI">
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .hero { background: linear-gradient(135deg, #1f2937 0%, #111827 100%); }
+  </style>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen">
+  <!-- Hero Section - 首先显示 Let's build something new -->
+  <div class="hero py-28 text-center">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="flex justify-center items-center gap-4 mb-6">
+        <span class="text-7xl">🐻</span>
+        <span class="text-3xl font-medium tracking-widest text-amber-400">BEAR EXPLORING</span>
+      </div>
+      
+      <h1 class="text-6xl md:text-7xl font-bold tracking-tighter leading-none mb-6">
+        Let's build something new
+      </h1>
+      
+      <p class="text-3xl text-zinc-400 max-w-2xl mx-auto">
+        200+ 独家 AI Mini-Apps<br>
+        <span class="text-amber-400">Safari 一键添加到主屏幕 · 随时随地使用</span>
+      </p>
+
+      <div class="mt-12">
+        <a href="#explore" class="inline-block bg-amber-500 hover:bg-amber-600 text-black font-semibold text-2xl px-14 py-6 rounded-3xl transition">
+          立即探索全部 200 个 →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-12" id="explore">
+    <input id="searchInput" type="text" placeholder="搜索 prompt、领域、编号..." 
+           class="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-8 py-6 text-xl focus:outline-none focus:border-amber-500 mb-10">
+
+    <div id="promptGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50">
+    <div class="bg-zinc-900 rounded-3xl max-w-2xl w-full mx-4 overflow-hidden">
+      <div class="p-8 border-b border-zinc-800 flex justify-between">
+        <h2 id="modalTitle" class="text-2xl font-semibold"></h2>
+        <button onclick="closeModal()" class="text-4xl text-zinc-400">×</button>
+      </div>
+      <div class="p-8 max-h-[60vh] overflow-auto">
+        <pre id="modalContent" class="text-sm font-mono bg-zinc-950 p-6 rounded-2xl whitespace-pre-wrap"></pre>
+      </div>
+      <div class="p-8 border-t border-zinc-800">
+        <button onclick="copyPrompt()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold py-6 rounded-3xl text-xl">
+          📋 一键复制完整 Prompt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const prompts = [
+      {id:1, name:"MealMaster v2.1", category:"个人生活", desc:"每周智能餐饮规划", full:"You are MealMaster v2.1..."},
+      {id:2, name:"FitForge v1.9", category:"个人生活", desc:"个性化健身计划生成器", full:"You are FitForge v1.9..."},
+      // 这里先放 5 个示例，部署成功后我会给你完整 200 个替换代码
+      {id:200, name:"LawFirmFlow v2.1", category:"法律合规", desc:"小型律所运营管理", full:"You are LawFirmFlow v2.1..."}
+    ];
+
+    const grid = document.getElementById('promptGrid');
+    const searchInput = document.getElementById('searchInput');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+
+    function renderPrompts(data) {
+      grid.innerHTML = '';
+      data.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'bg-zinc-900 border border-zinc-800 hover:border-amber-500 rounded-3xl p-6 cursor-pointer transition';
+        card.innerHTML = `
+          <div class="text-amber-400 text-sm mb-2">${p.category}</div>
+          <h3 class="text-xl font-semibold mb-3">${p.name}</h3>
+          <p class="text-zinc-400 line-clamp-3">${p.desc}</p>
+        `;
+        card.onclick = () => {
+          modalTitle.textContent = p.name;
+          modalContent.textContent = p.full;
+          modal.classList.remove('hidden');
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.toLowerCase();
+      const filtered = prompts.filter(p => 
+        p.name.toLowerCase().includes(term) || 
+        p.desc.toLowerCase().includes(term) ||
+        p.category.toLowerCase().includes(term)
+      );
+      renderPrompts(filtered);
+    });
+
+    renderPrompts(prompts);
+
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
+
+    function copyPrompt() {
+      navigator.clipboard.writeText(modalContent.textContent);
+      alert('✅ 已复制！直接粘贴到 Grok 或 ChatGPT 即可使用');
+    }
+  </script>
+</body>
+</html>
