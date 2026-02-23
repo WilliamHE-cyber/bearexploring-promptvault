@@ -11,32 +11,61 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Bear Exploring AI">
   <style>
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { font-family: system-ui, -apple-system, sans-serif; }
     .hero { background: linear-gradient(135deg, #1f2937 0%, #111827 100%); }
+    .category-btn { transition: all 0.2s; }
+    .category-btn.active { background-color: #fbbf24; color: #111827; font-weight: 600; }
   </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
-  <!-- Hero Section -->
+  <!-- Hero -->
   <div class="hero py-28 text-center">
     <div class="max-w-5xl mx-auto px-6">
       <div class="flex justify-center items-center gap-4 mb-6">
         <span class="text-7xl">🐻</span>
         <span class="text-3xl font-medium tracking-widest text-amber-400">BEAR EXPLORING AI</span>
       </div>
-      
       <h1 class="text-6xl md:text-7xl font-bold tracking-tighter leading-none mb-6">
         Let's build something new
       </h1>
-      
       <p class="text-3xl text-zinc-400 max-w-2xl mx-auto">
         200+ Exclusive AI Mini-Apps<br>
-        <span class="text-amber-400">Add to Home Screen • Works offline • Instant access</span>
+        <span class="text-amber-400">Add to Home Screen • Works offline</span>
       </p>
-
       <div class="mt-12">
         <a href="#explore" class="inline-block bg-amber-500 hover:bg-amber-600 text-black font-semibold text-2xl px-14 py-6 rounded-3xl transition">
-          Explore All 200+ Mini-Apps →
+          Explore All 200 Mini-Apps →
         </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-12" id="explore">
+    <!-- Search -->
+    <input id="searchInput" type="text" placeholder="Search prompts, categories or numbers..." 
+           class="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-8 py-6 text-xl focus:outline-none focus:border-amber-500 mb-8">
+
+    <!-- Category Navigation -->
+    <div id="categories" class="flex flex-wrap gap-3 mb-10"></div>
+
+    <!-- Prompt Grid -->
+    <div id="promptGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50">
+    <div class="bg-zinc-900 rounded-3xl max-w-2xl w-full mx-4 overflow-hidden">
+      <div class="p-8 border-b border-zinc-800 flex justify-between">
+        <h2 id="modalTitle" class="text-2xl font-semibold"></h2>
+        <button onclick="closeModal()" class="text-4xl text-zinc-400">×</button>
+      </div>
+      <div class="p-8 max-h-[60vh] overflow-auto">
+        <pre id="modalContent" class="text-sm font-mono bg-zinc-950 p-6 rounded-2xl whitespace-pre-wrap"></pre>
+      </div>
+      <div class="p-8 border-t border-zinc-800">
+        <button onclick="copyPrompt()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold py-6 rounded-3xl text-xl">
+          📋 Copy Full Prompt
+        </button>
       </div>
     </div>
   </div>
@@ -67,8 +96,8 @@
   </div>
 
   <script>
-    <!-- Add prompts 1-60 -->
-  [
+    const prompts = [
+  <!-- Add prompts 1-60 -->
   {
     "id": 1,
     "name": "MealMaster v2.1",
@@ -1475,52 +1504,89 @@
     "desc": "Solo & small law firm operations manager",
     "full": "You are LawFirmFlow v2.1, a practice management and compliance coach for solo/small firms.\n\nRules:\n- Always start with: “This is NOT legal advice. Always consult a qualified licensed attorney.”\n- Track client intake, conflicts, trust accounting, CLE requirements, and malpractice insurance.\n- Commands: /new client, /conflict check, /trust account, /CLE tracker, /help\nProfile your firm size and practice area."
   }
-]
-    const grid = document.getElementById('promptGrid');
-    const searchInput = document.getElementById('searchInput');
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalContent = document.getElementById('modalContent');
+];
+     const grid = document.getElementById('promptGrid');
+  const searchInput = document.getElementById('searchInput');
+  const categoriesDiv = document.getElementById('categories');
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalContent = document.getElementById('modalContent');
 
-    function renderPrompts(data) {
-      grid.innerHTML = '';
-      data.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'bg-zinc-900 border border-zinc-800 hover:border-amber-500 rounded-3xl p-6 cursor-pointer transition';
-        card.innerHTML = `
-          <div class="text-amber-400 text-sm mb-2">${p.category}</div>
-          <h3 class="text-xl font-semibold mb-3">${p.name}</h3>
-          <p class="text-zinc-400 line-clamp-3">${p.desc}</p>
-        `;
-        card.onclick = () => {
-          modalTitle.textContent = p.name;
-          modalContent.textContent = p.full;
-          modal.classList.remove('hidden');
-        };
-        grid.appendChild(card);
-      });
-    }
+  let currentFilter = 'all';
 
-    searchInput.addEventListener('input', () => {
-      const term = searchInput.value.toLowerCase();
-      const filtered = prompts.filter(p => 
-        p.name.toLowerCase().includes(term) || 
-        p.desc.toLowerCase().includes(term) ||
-        p.category.toLowerCase().includes(term)
-      );
-      renderPrompts(filtered);
+  function renderPrompts(data) {
+    grid.innerHTML = '';
+    data.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'bg-zinc-900 border border-zinc-800 hover:border-amber-500 rounded-3xl p-6 cursor-pointer transition';
+      card.innerHTML = `
+        <div class="text-amber-400 text-sm mb-2">${p.category}</div>
+        <h3 class="text-xl font-semibold mb-3">${p.name}</h3>
+        <p class="text-zinc-400 line-clamp-3">${p.desc}</p>
+      `;
+      card.onclick = () => showPrompt(p);
+      grid.appendChild(card);
     });
+  }
 
-    renderPrompts(prompts);
+  function showPrompt(p) {
+    modalTitle.textContent = p.name;
+    modalContent.textContent = p.full;
+    modal.classList.remove('hidden');
+  }
 
-    function closeModal() {
-      modal.classList.add('hidden');
-    }
+  function closeModal() {
+    modal.classList.add('hidden');
+  }
 
-    function copyPrompt() {
-      navigator.clipboard.writeText(modalContent.textContent);
-      alert('✅ Copied! Paste directly into Grok, ChatGPT or Claude.');
-    }
-  </script>
+  function copyPrompt() {
+    navigator.clipboard.writeText(modalContent.textContent);
+    alert('✅ Copied! Paste directly into Grok, ChatGPT or Claude.');
+  }
+
+  // Search
+  searchInput.addEventListener('input', () => {
+    const term = searchInput.value.toLowerCase();
+    const filtered = prompts.filter(p => 
+      p.name.toLowerCase().includes(term) || 
+      p.desc.toLowerCase().includes(term) ||
+      p.category.toLowerCase().includes(term)
+    );
+    renderPrompts(filtered);
+  });
+
+  // Category buttons (清晰目录分类)
+  function createCategoryButtons() {
+    categoriesDiv.innerHTML = '';
+    
+    const allBtn = document.createElement('button');
+    allBtn.className = `category-btn px-6 py-3 rounded-3xl text-sm border border-zinc-700 hover:border-amber-500 ${currentFilter === 'all' ? 'active' : ''}`;
+    allBtn.textContent = `All (200)`;
+    allBtn.onclick = () => {
+      currentFilter = 'all';
+      createCategoryButtons();
+      renderPrompts(prompts);
+    };
+    categoriesDiv.appendChild(allBtn);
+
+    const uniqueCats = [...new Set(prompts.map(p => p.category))].sort();
+    uniqueCats.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = `category-btn px-6 py-3 rounded-3xl text-sm border border-zinc-700 hover:border-amber-500 ${currentFilter === cat ? 'active' : ''}`;
+      btn.textContent = cat;
+      btn.onclick = () => {
+        currentFilter = cat;
+        createCategoryButtons();
+        const filtered = prompts.filter(p => p.category === cat);
+        renderPrompts(filtered);
+      };
+      categoriesDiv.appendChild(btn);
+    });
+  }
+
+  // 初始化
+  createCategoryButtons();
+  renderPrompts(prompts);
+</script>
 </body>
 </html>
