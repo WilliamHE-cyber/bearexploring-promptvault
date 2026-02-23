@@ -1,9 +1,10 @@
-<!-- Update manifest with bear icon paths -->
+<!-- Fix iOS PWA launch - use absolute start_url -->
 {
   "name": "Bear Exploring AI",
   "short_name": "Bear AI",
   "description": "200+ Exclusive AI Mini-Apps",
-  "start_url": "/",
+  "start_url": "https://bearexploring.com/",
+  "scope": "https://bearexploring.com/",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#1f2937",
