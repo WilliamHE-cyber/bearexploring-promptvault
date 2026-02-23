@@ -7,7 +7,6 @@
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#1f2937",
-  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -21,4 +20,4 @@
     }
   ]
 }
-<!-- Fix iOS PWA launch - use absolute start_url -->
+<!-- Update manifest with cute bear icons -->
