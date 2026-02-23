@@ -1,0 +1,22 @@
+{
+  "name": "Bear Exploring AI",
+  "short_name": "Bear AI",
+  "description": "200+ Exclusive AI Mini-Apps - Add to Home Screen",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#1f2937",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/1f2937/ffffff?text=🐻",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/1f2937/ffffff?text=🐻",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
